@@ -1,0 +1,86 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import folium
+from folium.plugins import HeatMap
+from google.colab import files
+
+# Load the dataset
+uploaded = files.upload()  # Make sure to upload the file in the Colab environment
+
+# Check the filename of the uploaded file
+for filename in uploaded.keys():
+    print(f"Uploaded file: {filename}")
+
+# Assuming the dataset is uploaded as 'US_Accidents_Dec20.csv'
+# Adjust the filename if it's different
+data = pd.read_csv(filename)
+
+# Display the first few rows of the dataset
+print(data.head())
+
+# ... (rest of the code remains the same)
+data['Start_Time'] = pd.to_datetime(data['Start_Time'])
+
+# Extract hour, day of the week, and month from Start_Time
+data['Hour'] = data['Start_Time'].dt.hour
+data['DayOfWeek'] = data['Start_Time'].dt.dayofweek
+data['Month'] = data['Start_Time'].dt.month
+
+# Display basic statistics
+print(data.describe())
+
+# Analyze and Visualize Patterns
+
+# 1. Accidents by hour of the day
+plt.figure(figsize=(10,6))
+sns.countplot(data['Hour'])
+plt.title('Accidents by Hour of the Day')
+plt.xlabel('Hour of the Day')
+plt.ylabel('Number of Accidents')
+plt.show()
+
+# 2. Accidents by day of the week
+plt.figure(figsize=(10,6))
+sns.countplot(data['DayOfWeek'])
+plt.title('Accidents by Day of the Week')
+plt.xlabel('Day of the Week')
+plt.ylabel('Number of Accidents')
+plt.show()
+
+# 3. Accidents by month
+plt.figure(figsize=(10,6))
+sns.countplot(data['Month'])
+plt.title('Accidents by Month')
+plt.xlabel('Month')
+plt.ylabel('Number of Accidents')
+plt.show()
+
+# 4. Accidents by weather condition
+plt.figure(figsize=(12,8))
+sns.countplot(y='Weather_Condition', data=data, order = data['Weather_Condition'].value_counts().index)
+plt.title('Accidents by Weather Condition')
+plt.xlabel('Number of Accidents')
+plt.ylabel('Weather Condition')
+plt.show()
+
+# 5. Accidents by road condition
+plt.figure(figsize=(12,8))
+sns.countplot(y='Road_Condition', data=data, order = data['Road_Condition'].value_counts().index)
+plt.title('Accidents by Road Condition')
+plt.xlabel('Number of Accidents')
+plt.ylabel('Road Condition')
+plt.show()
+
+# Visualize Accident Hotspots using Folium
+# Create a base map
+accident_map = folium.Map(location=[37.0902, -95.7129], zoom_start=5)
+
+# Add accidents as heatmap
+heat_data = [[row['Start_Lat'], row['Start_Lng']] for index, row in data.iterrows()]
+HeatMap(heat_data).add_to(accident_map)
+
+# Display the map
+accident_map
